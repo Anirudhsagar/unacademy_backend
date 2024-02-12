@@ -4,38 +4,46 @@ const {SECRET} = require("../constants")
 const jwt = require('jsonwebtoken');
   
 
-async function registerUser(req , res , next){
-    
-    const {user} = req.body;
-    let existingUser = await userModel.findOne({ $or : [{
-          email : user.email} , {mobile : user.mobile}]})
 
-     try {  
+async function registerUser(req, res, next) {
+  try {
+    const { name, email, mobile, password } = req.body;
+    console.log(req.body);
 
-    if(existingUser){
-          return res.status(404).send({
-              error : "User already registered"     
-            })
+    if (!name || !email || !mobile) {
+      return res.status(400).send({
+        error: "Invalid user data in the request body"
+      });
     }
-  
-    // let goals = await goalModel.find();
-    
 
-    //  user.goals = goals
+    let existingUser = await userModel.findOne({
+      $or: [{ email: email }, { mobile: mobile }]
+    });
 
-   let userDoc =  await userModel.create(user);
-    
-       res.status(201).send({
-           message : "user succesfully registered",
-           user : userDoc
-      })
-
-    }catch(err){
-          return res.status(404).send({
-               error : "Something Went Wrong"
-          })
+    if (existingUser) {
+      return res.status(400).send({
+        error: "User already registered"
+      });
     }
-} 
+
+    let goals = await goalModel.find();
+    const user = { name, email, mobile, password, goals };
+
+    let userDoc = await userModel.create(user);
+
+    res.status(201).send({
+      message: "User successfully registered",
+      user: userDoc
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send({
+      error: "Internal Server Error"
+    });
+  }
+}
+
+
 
 
 async function loginUser(req , res , next){
@@ -88,13 +96,13 @@ async function updateUser(req , res , next){
 
           console.log(getUser)
 
-        //  let goals = getUser.goals.map((goal)=> {
-        //          if(goal.title === title){
-        //             return {...goal , subscription : true}
-        //          }else {
-        //               return {...goal}
-        //          }
-        //   })
+         let goals = getUser.goals.map((goal)=> {
+                 if(goal.title === title){
+                    return {...goal , subscription : true}
+                 }else {
+                      return {...goal}
+                 }
+          })
      
           getUser.subscription.push({title , details}) 
           

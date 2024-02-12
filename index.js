@@ -19,6 +19,10 @@ app.use(userRouter);
 app.use(goalRouter);
 
 
+app.get("/", function (req, res) {
+  res.send("Hello World");
+});
+
 async function connectDatabase(){
 
     try{
